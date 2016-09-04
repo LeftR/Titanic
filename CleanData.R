@@ -1,6 +1,12 @@
 
+### Missing column Survived on test data
 test$Survived <- NA
 
+test$DataSetName <- "Test"
+
+train$DataSetName <- "Train"
+
+### Connect trai and test data 
 full <- rbind(train, test)
 
 full$Title <- gsub('(.*, )|(\\..*)', '', full$Name)
@@ -26,4 +32,13 @@ full$Title[full$Title == 'Dr' & full$Sex == "female" ]     <- 'Mrs'
 full$Title[full$Title == 'Dr' & full$Sex == "male" ]     <- 'Mr'
 
 
-table(full$Sex, full$Title)
+prop.table(table(full$Sex, full$Title),1)
+
+
+full$Surname <- gsub('(\\,.*)', "", full$Name)
+train$Surname <- gsub('(\\,.*)', "", train$Name)
+
+Surename <- train[c("Surname","Ticket","")]
+
+Surename.group <- Surename %>% group_by("Ticket")
+
