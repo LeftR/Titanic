@@ -42,8 +42,16 @@ Surename <- full[c("Surname","Ticket")]
 
 Surename.group <- Surename %>% group_by("Ticket") 
 
+full$Fsize <- full$SibSp + full$Parch + 1
 
 
+full$FsizeD[full$Fsize == 1] <- 'singleton'
+full$FsizeD[full$Fsize < 5 & full$Fsize > 1] <- 'small'
+full$FsizeD[full$Fsize > 4] <- 'large'
+
+mosaicplot(table(full$FsizeD, full$Survived), main='Family Size by Survival', shade=TRUE)
+
+full$FsizeD <- factor(full$FsizeD)
 
 # Get rid of our missing passenger IDs
 embark_fare <- full %>%
@@ -68,17 +76,40 @@ ggplot(full[full$Pclass == '3' & full$Embarked == 'S', ],
 full$Fare[1044] <- median(full[full$Pclass == '3' & full$Embarked == 'S', ]$Fare, na.rm = TRUE)
 
 
+
+
+
+
+full$Deck<-factor(sapply(as.character(full$Cabin), function(x) strsplit(x, NULL)[[1]][1]))
+
+full$Child[full$Age < 10] <- 'Child'
+full$Child[full$Age >= 10] <- 'Adult'
+
+full$Mother <- 'Not Mother'
+full$Mother[full$Sex == 'female' & full$Parch > 0 & full$Age > 18 & full$Title != 'Miss'] <- 'Mother'
+
+#Extract Cabin Num from Cabin 
+full$CabinNum<-sapply(as.character(full$Cabin),function(x) strsplit(x,'[A-Z]')[[1]][2])
+full$CabinNum<-as.numeric(full$CabinNum)
+full$CabinPos<-NA
+
+#Categorize 1-50 as Front, 50-100 as Middle, >100 as End
+full$CabinPos[full$CabinNum<50]<-'Front'
+full$CabinPos[full$CabinNum>=50 & full$CabinNum<100]<-'Middle'
+full$CabinPos[full$CabinNum>=100]<-'End'
+#full<-full[!is.na(full$CabinNum),]
+full$CabinPos<-factor(full$CabinPos)
+
 # Make variables factors into factors
 factor_vars <- c('PassengerId','Pclass','Sex','Embarked',
-                 'Title','Surname')
+                 'Title','Surname','FsizeD','Deck','Child', 'Mother','CabinPos')
 
 full[factor_vars] <- lapply(full[factor_vars], function(x) as.factor(x))
-
 # Set a random seed
 set.seed(129)
 
 # Perform mice imputation, excluding certain less-than-useful variables:
-mice_mod <- mice(full[, !names(full) %in% c('PassengerId','Name','Ticket','Cabin','Surname','Survived')], method='rf') 
+mice_mod <- mice(full[, !names(full) %in% c('PassengerId','Name','Ticket','Cabin','Surname','Survived','FsizeD')], method='rf') 
 mice_output <- complete(mice_mod)
 
 # Plot age distributions
@@ -90,6 +121,13 @@ hist(mice_output$Age, freq=F, main='Age: MICE Output',
 
 # Replace Age variable from the mice model.
 full$Age <- mice_output$Age
+full$Deck <- mice_output$Deck
+full$Child <- mice_output$Child
+full$CabinPos <- mice_output$CabinPos
+
 
 # Show new number of missing Age values
 sum(is.na(full$Age))
+
+sum(is.na(full$Deck))
+

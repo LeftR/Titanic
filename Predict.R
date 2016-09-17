@@ -1,13 +1,15 @@
-train <- full[1:891,]
-test <- full[892:1309,]
+train <- full[full$DataSetName=='Train',]
+test <- full[full$DataSetName=='Test',]
 
 # Set a random seed
 set.seed(356)
 
+sapply(train, function(x) sum(is.na(x)))
+
 # Build the model (note: not all possible variables are used)
 rf_model <- randomForest(factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + 
-                           Fare + Embarked + Title    ,
-                         data = train)
+                           Fare + Embarked + Title +Deck+Child+FsizeD + Mother +CabinPos, 
+                         data = train, ntree=400)
 
 # Show model error
 plot(rf_model, ylim=c(0,0.36))
