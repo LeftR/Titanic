@@ -37,6 +37,16 @@ prop.table(table(full$Sex, full$Title),1)
 
 full$Surname <- gsub('(\\,.*)', "", full$Name)
 
+#Combining the Family Surname with the Family Size will set up a new feature
+full$Surname <- sapply(as.character( full$Name), FUN=function(x) {strsplit(x, split='[,.]')[[1]][1]})
+full$FamilyID <- paste(as.character(full$FamilySize), full$Surname, sep="")
+full$FamilyID[full$FamilySize <= 2] <- 'Small'
+famIDs <- data.frame(table(full$FamilyID))
+famIDs <- famIDs[famIDs$Freq <= 2,]
+full$FamilyID[full$FamilyID %in% famIDs$Var1] <- 'Small'
+full$FamilyID <- factor(full$FamilyID)
+table(full$FamilyID)
+
 
 Surename <- full[c("Surname","Ticket")]
 
@@ -109,7 +119,7 @@ full[factor_vars] <- lapply(full[factor_vars], function(x) as.factor(x))
 set.seed(129)
 
 # Perform mice imputation, excluding certain less-than-useful variables:
-mice_mod <- mice(full[, !names(full) %in% c('PassengerId','Name','Ticket','Cabin','Surname','Survived','FsizeD')], method='rf') 
+mice_mod <- mice(full[, !names(full) %in% c('PassengerId','Name','Ticket','Cabin','Surname','Survived','FsizeD','FamilyID')], method='rf') 
 mice_output <- complete(mice_mod)
 
 # Plot age distributions
