@@ -40,5 +40,5 @@ train$Surname <- gsub('(\\,.*)', "", train$Name)
 
 Surename <- train[c("Surname","Ticket","")]
 
-Surename.group <- Surename %>% group_by("Ticket")
+Surename.group <- Surename %>% group_by(Ticket) %>% tally()
 
