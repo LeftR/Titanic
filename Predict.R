@@ -9,7 +9,9 @@ sapply(train, function(x) sum(is.na(x)))
 # Build the model (note: not all possible variables are used)
 rf_model <- randomForest(factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + 
                            Fare + Embarked + Title +Deck+FsizeD +CabinPos + QuotedName, 
-                         data = train, ntree=1000)
+                         data = train, ntree=350)
+
+print(rf_model)
 
 # Show model error
 plot(rf_model, ylim=c(0,0.36))
@@ -49,28 +51,28 @@ write.csv(solution, file = 'titanic.csv', row.names = F)
 #########################3333
 
 
-<<<<<<< HEAD
-fit.cf<-cforest(Survived~Pclass + Sex + Age + SibSp + Parch + FamilyID +
-                  Fare + Embarked + Title +Deck+FsizeD +CabinPos +  QuotedName ,data=train,
-                controls=cforest_unbiased(ntree=1000, mtry=6))
-=======
+
 fit.cf<-cforest(Survived~Pclass + Sex + Age + SibSp + Parch + 
                   Fare + Embarked + Title +Deck+CabinPos + FamilyID + Child+Mother,data=train,
                 controls=cforest_unbiased(ntree=2000, mtry=3))
 
 Prediction <- predict(fit.cf, test, OOB=TRUE, type = "response")
 submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+
+
+submit$Survived2<- solution$Survived
+
+submit$SurvivedF <- (((as.numeric(submit$Survived2)-1)*((0.25+0.5)/2)+0.5)) * submit$Survived
+
+submit$Survived2 <- NULL
+submit$Survived <- submit$SurvivedF
+submit$SurvivedF <- NULL
 submit$Survived <- as.numeric (submit$Survived>0.5)
 View(submit)
 table(submit)
 write.csv(submit, file = "TitanicConditionalforestsSub.csv", row.names = FALSE)
->>>>>>> 56d337315b363ab7b7e7b4a3a4e0ce86b5578683
 
-#write submission
-test$Survived<-predict(fit.cf,test,OOB=TRUE,type='response')
-submission<-test[,1:2]
-submission$Survived <- as.numeric (submission$Survived>0.5)
-write.csv(submission,'titanic_cforest.csv',row.names=F)
+
 
 
 ##################################33
