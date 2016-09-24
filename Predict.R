@@ -49,12 +49,63 @@ write.csv(solution, file = 'titanic.csv', row.names = F)
 #########################3333
 
 
+<<<<<<< HEAD
 fit.cf<-cforest(Survived~Pclass + Sex + Age + SibSp + Parch + FamilyID +
                   Fare + Embarked + Title +Deck+FsizeD +CabinPos +  QuotedName ,data=train,
                 controls=cforest_unbiased(ntree=1000, mtry=6))
+=======
+fit.cf<-cforest(Survived~Pclass + Sex + Age + SibSp + Parch + 
+                  Fare + Embarked + Title +Deck+CabinPos + FamilyID + Child+Mother,data=train,
+                controls=cforest_unbiased(ntree=2000, mtry=3))
+
+Prediction <- predict(fit.cf, test, OOB=TRUE, type = "response")
+submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
+submit$Survived <- as.numeric (submit$Survived>0.5)
+View(submit)
+table(submit)
+write.csv(submit, file = "TitanicConditionalforestsSub.csv", row.names = FALSE)
+>>>>>>> 56d337315b363ab7b7e7b4a3a4e0ce86b5578683
 
 #write submission
 test$Survived<-predict(fit.cf,test,OOB=TRUE,type='response')
 submission<-test[,1:2]
 submission$Survived <- as.numeric (submission$Survived>0.5)
 write.csv(submission,'titanic_cforest.csv',row.names=F)
+
+
+##################################33
+
+library(arules)
+
+factor_vars <- c('PassengerId','Survived','Age','SibSp','Parch','Pclass','Sex','Embarked',
+                 'Title','Surname','FsizeD','Deck','Child', 'Mother','CabinPos',
+                 'Fare','DataSetName','CabinNum','Fsize')
+
+train[factor_vars] <- lapply(train[factor_vars], function(x) as.factor(x))
+
+
+rules <- apriori(train, parameter = list(minlen=2, supp=0.03,conf=0.95), 
+                 appearance = list(rhs=c("Survived=0","Survived=1"),
+                                   default="lhs"),
+                                  control = list(verbose=F))
+
+rules.sorted <- sort(rules, by="lift")
+
+    #inspect(rules.sorted)
+
+
+subset.matrix<- is.subset(rules.sorted,rules.sorted)
+
+subset.matrix[lower.tri(subset.matrix,diag = T)]<- NA
+
+redundant <- colSums(subset.matrix,na.rm = T)>= 1
+
+with(redundant)
+
+rules.pruned <- rules.sorted[!redundant]
+
+inspect(rules.pruned)
+
+library(arulesViz)
+
+plot(rules)
