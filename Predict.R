@@ -8,7 +8,7 @@ sapply(train, function(x) sum(is.na(x)))
 
 # Build the model (note: not all possible variables are used)
 rf_model <- randomForest(factor(Survived) ~ Pclass + Sex + Age + SibSp + Parch + 
-                           Fare + Embarked + Title +Deck+FsizeD +CabinPos + FamilyID, 
+                           Fare + Embarked + Title +Deck+FsizeD +CabinPos + QuotedName, 
                          data = train, ntree=1000)
 
 # Show model error
@@ -49,9 +49,9 @@ write.csv(solution, file = 'titanic.csv', row.names = F)
 #########################3333
 
 
-fit.cf<-cforest(Survived~Pclass + Sex + Age + SibSp + Parch + 
-                  Fare + Embarked + Title +Deck+FsizeD +CabinPos + FamilyID,data=train,
-                controls=cforest_unbiased(ntree=500, mtry=3))
+fit.cf<-cforest(Survived~Pclass + Sex + Age + SibSp + Parch + FamilyID +
+                  Fare + Embarked + Title +Deck+FsizeD +CabinPos +  QuotedName ,data=train,
+                controls=cforest_unbiased(ntree=1000, mtry=6))
 
 #write submission
 test$Survived<-predict(fit.cf,test,OOB=TRUE,type='response')

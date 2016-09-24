@@ -47,13 +47,18 @@ full$FamilyID[full$FamilyID %in% famIDs$Var1] <- 'Small'
 full$FamilyID <- factor(full$FamilyID)
 table(full$FamilyID)
 
-<<<<<<< HEAD
-Surename.group <- Surename %>% group_by(Ticket) %>% tally()
-=======
+# <<<<<<< HEAD
+# Surename.group <- Surename %>% group_by(Ticket) %>% tally()
+# =======
 
 Surename <- full[c("Surname","Ticket")]
 
 Surename.group <- Surename %>% group_by("Ticket") 
+
+
+d <- full %>% mutate(AdditionalName = grepl('\\(', Name)) %>% select(Survived, AdditionalName) 
+full <- mutate(full,QuotedName = grepl('\\(', Name))
+
 
 full$Fsize <- full$SibSp + full$Parch + 1
 
@@ -115,7 +120,7 @@ full$CabinPos<-factor(full$CabinPos)
 
 # Make variables factors into factors
 factor_vars <- c('PassengerId','Pclass','Sex','Embarked',
-                 'Title','Surname','FsizeD','Deck','Child', 'Mother','CabinPos')
+                 'Title','Surname','FsizeD','Deck','Child', 'Mother','CabinPos','QuotedName')
 
 full[factor_vars] <- lapply(full[factor_vars], function(x) as.factor(x))
 # Set a random seed
@@ -143,5 +148,5 @@ full$CabinPos <- mice_output$CabinPos
 sum(is.na(full$Age))
 
 sum(is.na(full$Deck))
->>>>>>> e3d20c5548a4c50027d0a74cbd678d2653fd6f18
+
 
