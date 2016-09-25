@@ -62,7 +62,7 @@ submit <- data.frame(PassengerId = test$PassengerId, Survived = Prediction)
 
 submit$Survived2<- solution$Survived
 
-submit$SurvivedF <- (((as.numeric(submit$Survived2)-1)*((0.25+0.5)/2)+0.5)) * submit$Survived
+submit$SurvivedF <- (((as.numeric(submit$Survived2)-1)*((0.43+0.5)/2)+0.5)) * submit$Survived
 
 submit$Survived2 <- NULL
 submit$Survived <- submit$SurvivedF
@@ -79,17 +79,17 @@ write.csv(submit, file = "TitanicConditionalforestsSub.csv", row.names = FALSE)
 
 library(arules)
 
-factor_vars <- c('PassengerId','Survived','Age','SibSp','Parch','Pclass','Sex','Embarked',
-                 'Title','Surname','FsizeD','Deck','Child', 'Mother','CabinPos',
-                 'Fare','DataSetName','CabinNum','Fsize')
+factor_vars <- names(train)
 
 train[factor_vars] <- lapply(train[factor_vars], function(x) as.factor(x))
 
 
-rules <- apriori(train, parameter = list(minlen=2, supp=0.03,conf=0.95), 
+rules <- apriori(train, parameter = list(minlen=2, supp=0.2,conf=0.90), 
                  appearance = list(rhs=c("Survived=0","Survived=1"),
                                    default="lhs"),
                                   control = list(verbose=F))
+
+quality(rules) <- round(quality(rules), digits = 3)
 
 rules.sorted <- sort(rules, by="lift")
 
@@ -102,12 +102,19 @@ subset.matrix[lower.tri(subset.matrix,diag = T)]<- NA
 
 redundant <- colSums(subset.matrix,na.rm = T)>= 1
 
-with(redundant)
-
 rules.pruned <- rules.sorted[!redundant]
+
+
 
 inspect(rules.pruned)
 
 library(arulesViz)
+plot(rules.pruned,interactive = T)
 
-plot(rules)
+plot(rules.pruned,method="grouped")
+
+plot(rules.pruned,method="graph")
+
+plot(rules.pruned,method="paracoord", control=list(reorder=TRUE))
+
+
